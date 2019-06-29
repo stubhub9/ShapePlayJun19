@@ -5,8 +5,91 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShapePlayJun19"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+        Title="MainWindow" 
+        Height="800" Width="1200">
+    <DockPanel
+        LastChildFill="True">
+
+        <ToolBar
+            Name="mainToolBar"
+            Height="50"
+            DockPanel.Dock="Top">
+
+            <RadioButton
+                Name="circleOption"
+                GroupName="shapeSelection" 
+                Click="CircleOption_Click">
+
+                <Ellipse
+                    Fill="Green"
+                    Height="35"
+                    Width="35"/>
+            </RadioButton>
+
+            <RadioButton
+                Name="rectOption"
+                GroupName="shapeSelection" 
+                Click="RectOption_Click">
+
+                <Rectangle
+                    Fill="Blue"
+                    Height="35"
+                    Width="35"
+                    RadiusX="10"
+                    RadiusY="10"
+                    />
+            </RadioButton>
+
+            <RadioButton
+                Name="lineOption"
+                GroupName="shapeSelection" 
+                Click="LineOption_Click">
+
+                <Line
+                    Height="35"
+                    Width="35"
+                    Stroke="Gray"
+                    StrokeThickness="10"
+                    StrokeStartLineCap="Triangle"
+                    StrokeEndLineCap="Round"
+                    X1="10" Y1="10"
+                    X2=" 25" Y2="25"
+                    />
+            </RadioButton>
+
+            <RadioButton
+                Name="polyLineOption"
+                GroupName="shapeSelection" 
+                Click="PolyLineOption_Click">
+
+                <Polyline
+                    Height="35"
+                    Width="35"
+                    Fill="Red"
+                    FillRule="EvenOdd"
+                    Stroke="Blue"
+                    StrokeEndLineCap="Round"
+                    StrokeStartLineCap="Triangle"
+                    StrokeThickness="1"
+                    Points="10, 10 25,12 10,25 25, 25"
+                    
+                    />
+            </RadioButton>
+
+            <TextBlock
+            Name="menuTextBlock"
+                Text="&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;  Push a button.">
+
+            </TextBlock>
+
+
+        </ToolBar>
+
+        <Canvas
+            Name="canvasDrawingArea"
+            Background="Black" 
+            MouseLeftButtonDown="CanvasDrawingArea_MouseLeftButtonDown" 
+            MouseRightButtonDown="CanvasDrawingArea_MouseRightButtonDown"/>
+
+    </DockPanel>
 </Window>
