@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Threading;
 using System.Windows.Threading;
+using System.Windows.Media.Animation;
 
 namespace ShapePlayJun19
 {
@@ -22,18 +23,28 @@ namespace ShapePlayJun19
     /// </summary>
     public partial class MainWindow : Window
     {
+
         // Fields
         private enum SelectedShape
-        { Unset, Circle, Rectangle, Line, PolyLine }
+        { Unset, PolyLine1, Rectangle, Line, PolyLine, PolyLine2 }
         SelectedShape currentShape;
 
         DispatcherTimer dispatcherTimer;
+
+        LinearGradientBrush linearGradientBrush;
+
         PointCollection points;
         Polyline polyline;
         static Random random = new Random ();
+        
+        Rectangle rectangle;
+        RectangleSupport rectangleSupport;
 
         int tickCounter = 0;
         double degrees = 0;
+
+
+        double add;
 
         // Constructor
 
@@ -45,8 +56,9 @@ namespace ShapePlayJun19
             dispatcherTimer = new DispatcherTimer ()
             {
                 /*Interval = new TimeSpan ( 0, 0, 0, 0, 500 ),*/
-                Interval = TimeSpan.FromMilliseconds ( 100 ),
-        };
+                //Interval = TimeSpan.FromMilliseconds ( 100 ),
+                Interval = TimeSpan.FromMilliseconds ( 10 ),
+            };
             dispatcherTimer.Tick += new EventHandler ( DispatcherTimer_Tick );
 
             BeginTimer ();
@@ -60,27 +72,34 @@ namespace ShapePlayJun19
 
 
 
-        // Events
+        #region Events
 
         private void CanvasDrawingArea_MouseRightButtonDown ( object sender, MouseButtonEventArgs e )
         {
-            polyline.Points.Clear ();
+            polyline?.Points.Clear ();
 
         }
 
 
         private void CanvasDrawingArea_MouseLeftButtonDown ( object sender, MouseButtonEventArgs e )
         {
-            polyline.Points.Clear ();
+            polyline?.Points.Clear ();
 
         }
 
 
         private void CircleOption_Click ( object sender, RoutedEventArgs e )
         {
-            currentShape = SelectedShape.Circle;
+            currentShape = SelectedShape.PolyLine1;
             BuildPolyLine1 ();
 
+        }
+
+
+        private void CircleOption1_Click ( object sender, RoutedEventArgs e )
+        {
+            currentShape = SelectedShape.PolyLine2;
+            BuildPolyLine1 ();
         }
 
 
@@ -100,20 +119,105 @@ namespace ShapePlayJun19
         {
             currentShape = SelectedShape.PolyLine;
             BuildPolyLine ();
-
-
         }
 
 
         private void RectOption_Click ( object sender, RoutedEventArgs e )
         {
             currentShape = SelectedShape.Rectangle;
-            BuildPolyLine1 ();
+            BuildRectangle ();
         }
+        #endregion Events
 
 
 
         // Methods
+
+
+        void AddToPolyLine ()
+        {
+            double _x = random.Next ( 10, 1890 );
+            double _y = random.Next ( 10, 930 );
+            Point point = new Point ( _x, _y );
+            points.Add ( point );
+
+        }
+
+
+        /// <summary>
+        /// Radical difference changing from 185.0 by .1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        /// </summary>
+        void AddToPolyLine1 ()
+        {
+            degrees += add;
+            //degrees += 175.1;
+            //degrees += 180.1;
+            //degrees += 180.1; 
+            if ( degrees > 360.0 )
+                degrees -= 360.0;
+            double _x = ( Math.Sin ( degrees ) * 460.0 ) + 930;
+            double _y = ( Math.Cos ( degrees ) * 460.0 ) + 470;
+            Point point = new Point ( _x, _y );
+            points.Add ( point );
+        }
+
+
+        void AddToPolyLine2 ()
+        {
+            //degrees += 188.0;
+            //degrees += 175.5;
+            degrees += 191.5;
+            //degrees += 185.5;
+            if ( degrees > 360.0 )
+                degrees -= 360.0;
+            double _angle = Math.PI * degrees / 180.0;
+            double _x = ( Math.Sin ( _angle ) * 460.0 ) + 930;
+            double _y = ( Math.Cos ( _angle ) * 460.0 ) + 470;
+            Point point = new Point ( _x, _y );
+            points.Add ( point );
+        }
+
+
+        struct RectangleSupport
+        {
+
+            public double X;
+            public double Y;
+            public double DeltaX ;
+            public double DeltaY;
+            public double DeltaRadX;
+            public double DeltaRadY;
+
+            public RectangleSupport ( int _)
+            {
+                X = 15;
+                Y = 15;
+                DeltaX = 0;
+                DeltaY = 0;
+                DeltaRadX = .1;
+                DeltaRadY = .1;
+            }
+
+        }
+
+        // Need to use CompositionTarget.Render!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        void AnimateRectangle ()
+        {
+            if ( ( rectangle.RadiusX >= 44.9 ) || ( rectangle.RadiusX <= -25.0 ) )
+                rectangleSupport.DeltaRadX = -rectangleSupport.DeltaRadX;
+            rectangle.RadiusX += rectangleSupport.DeltaRadX;
+            rectangle.RadiusY += rectangleSupport.DeltaRadX;
+
+            if ( ( rectangleSupport.X < 10.0 ) || ( rectangleSupport.X > 1000.0 ) )
+                rectangleSupport.DeltaX = -rectangleSupport.DeltaX;
+            rectangleSupport.X += rectangleSupport.DeltaX;
+            if ( ( rectangleSupport.Y < 10.0 ) || ( rectangleSupport.Y > 600.0 ) )
+                rectangleSupport.DeltaY = -rectangleSupport.DeltaY;
+            rectangleSupport.Y += rectangleSupport.DeltaY;
+
+            rectangle.Margin = new Thickness ( rectangleSupport.X, rectangleSupport.Y, 0.0, 0.0 );
+        }
+
 
         void BeginTimer ()
         {
@@ -121,8 +225,26 @@ namespace ShapePlayJun19
         }
 
 
+        void BuildLinearGradientBrush ()
+        {
+            linearGradientBrush = new LinearGradientBrush ()
+            {
+                StartPoint = new Point ( 0, 0 ),
+                EndPoint = new Point ( 1, 1 )
+            };
+            linearGradientBrush.GradientStops.Add ( new GradientStop ( Colors.DarkBlue, 0 ) );
+            linearGradientBrush.GradientStops.Add ( new GradientStop ( Colors.LightCoral, 0.499 ) );
+            linearGradientBrush.GradientStops.Add ( new GradientStop ( Colors.DarkGreen, 0.5 ) );
+            linearGradientBrush.GradientStops.Add ( new GradientStop ( Colors.LightGoldenrodYellow, 0.501 ) );
+            linearGradientBrush.GradientStops.Add ( new GradientStop ( Colors.DarkMagenta, 0.9 ) );
+            linearGradientBrush.GradientStops.Add ( new GradientStop ( Colors.White, 1 ) );
+        }
+
+
         void BuildPolyLine ()
         {
+
+            //dispatcherTimer.Start ();
             tickCounter = 0;
             polyline?.Points.Clear ();
             canvasDrawingArea.Children.Clear ();
@@ -131,7 +253,6 @@ namespace ShapePlayJun19
             {
                 Fill = new SolidColorBrush ( Color.FromArgb ( 255, 180, 0, 0 ) ),
                 FillRule = FillRule.EvenOdd,
-                //Fill = Brushes.HotPink,
                 Stroke = Brushes.Green,
                 StrokeThickness = 2,
                 StrokeLineJoin = PenLineJoin.Round,
@@ -143,11 +264,14 @@ namespace ShapePlayJun19
 
         void BuildPolyLine1 ()
         {
+            //dispatcherTimer.Start ();
             degrees = 0;
             tickCounter = 0;
             polyline?.Points.Clear ();
             canvasDrawingArea.Children.Clear ();
-            
+
+            add = 90.0 + ( random.Next ( 900 ) / 10 );
+
             polyline = new Polyline ()
             {
                 Fill = new SolidColorBrush ( Color.FromArgb ( 255, 0, 0, 180 ) ),
@@ -162,7 +286,43 @@ namespace ShapePlayJun19
         }
 
 
-        public void Timer_Ticked ()
+        void BuildRectangle ()
+        {
+            //tickCounter = 0;
+            //polyline?.Points.Clear ();
+            //dispatcherTimer.Stop ();
+            canvasDrawingArea.Children.Clear ();
+            BuildLinearGradientBrush ();
+            rectangle = new Rectangle ()
+            {
+                Name = "rectangle",
+                Height = 100.0,
+                Width = 100.0,
+                //Fill = new SolidColorBrush ( Color.FromArgb ( 255, 180, 0, 0 ) ),
+                Fill = linearGradientBrush,
+                Margin = new Thickness (15.0, 15.0, 0.0 ,0.0),
+                RadiusX = 10,
+                RadiusY = 10.0,
+                Stroke = Brushes.BlueViolet,
+                StrokeThickness = 2,
+                StrokeLineJoin = PenLineJoin.Round,
+            };
+            rectangleSupport = new RectangleSupport ()
+            {
+                X = 15.0,
+                Y = 15.0,
+                DeltaX = 11.1,
+                DeltaY = 11.1,
+                DeltaRadX =1.1,
+                DeltaRadY = 1.1,
+            };
+            //rectangleSupport = new RectangleSupport ( 1 );
+
+            canvasDrawingArea.Children.Add ( rectangle );
+        }
+
+
+        void Timer_Ticked ()
         {
             if ( currentShape == SelectedShape.Unset )
                 return;
@@ -172,12 +332,17 @@ namespace ShapePlayJun19
 
             switch ( currentShape )
             {
-                case SelectedShape.Circle:
+                case SelectedShape.PolyLine1:
                     AddToPolyLine1 ();
                     break;
 
-                case SelectedShape.Rectangle:
+                case SelectedShape.PolyLine2:
                     AddToPolyLine2 ();
+                    break;
+
+                case SelectedShape.Rectangle:
+                    AnimateRectangle ();
+                    //AddToPolyLine2 ();
                     break;
 
                 default:
@@ -185,45 +350,33 @@ namespace ShapePlayJun19
                     break;
             }
 
-
         }
 
 
-        void AddToPolyLine ()
-        {
-            double _x = random.Next ( 10, 1100 );
-            double _y = random.Next ( 10, 650 );
-            Point point = new Point ( _x, _y );
-            points.Add ( point );
 
-        }
+        //var doubleAnimationMarginX = new DoubleAnimation
+        //{
+        //    From = 10,
+        //    To = 1100,
+        //    AutoReverse = true,
+        //    RepeatBehavior = RepeatBehavior.Forever,
+        //};
 
+        //var bounceEase = new BounceEase ()
+        //{
+        //    Bounciness = 0,
+        //    EasingMode = EasingMode.EaseIn,
+        //};
+        ////Storyboard.SetTargetName ( dou)
 
-        void AddToPolyLine1 ()
-        {
-            degrees += 185.0;
-            if ( degrees > 360.0 )
-                degrees -= 360.0;
-            double _x = ( Math.Sin ( degrees ) * 300.0 ) + 500;
-            double _y = ( Math.Cos ( degrees ) * 300.0 ) + 350;
-            Point point = new Point ( _x, _y );
-            points.Add ( point );
-        }
-
-
-        void AddToPolyLine2 ()
-        {
-            degrees += 185.5;
-            if ( degrees > 360.0 )
-                degrees -= 360.0;
-            double _angle = Math.PI * degrees / 180.0;
-            double _x = ( Math.Sin ( _angle ) * 300.0 ) + 500;
-            double _y = ( Math.Cos ( _angle ) * 300.0 ) + 350;
-            Point point = new Point ( _x, _y );
-            points.Add ( point );
-        }
-
-
+        //var doubleAnimationMarginY = new DoubleAnimation
+        //{
+        //    From = 10,
+        //    To = 700,
+        //    AutoReverse = true,
+        //    RepeatBehavior = RepeatBehavior.Forever,
+        //    EasingFunction = bounceEase,
+        //};
 
 
 
